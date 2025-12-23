@@ -1,6 +1,34 @@
 {
-    "DHT1": {
-        "simulated": false,
-        "pin": 17
-    } 
+    "DS1": {
+        "name": "Door Sensor",
+        "pin": 17,
+        "simulate": true
+    },
+    "DL":  {
+        "name": "Door Light",
+        "pin": 27,
+        "simulate": true
+    },
+    "DUS1": {
+        "name":  "Door Ultrasonic Sensor",
+        "trigger_pin": 23,
+        "echo_pin": 24,
+        "simulate": true
+    },
+    "DB": {
+        "name": "Door Buzzer",
+        "pin": 22,
+        "simulate": true
+    },
+    "DPIR1": {
+        "name": "Door Motion Sensor",
+        "pin": 5,
+        "simulate": true
+    },
+    "DMS": {
+        "name": "Door Membrane Switch",
+        "row_pins": [6, 13, 19, 26],
+        "col_pins": [12, 16, 20, 21],
+        "simulate": true
+    }
 }
