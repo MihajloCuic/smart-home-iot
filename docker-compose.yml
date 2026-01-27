@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./docker/mosquitto/data:/mosquitto/data
+      - ./docker/mosquitto/log:/mosquitto/log
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: admin123
+      DOCKER_INFLUXDB_INIT_ORG: smart-home
+      DOCKER_INFLUXDB_INIT_BUCKET: iot
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: mJ9kL2pN8qR5tY7vX3bZ6cF4gH1jK0mN9pQ8sT5wX2yA7bC4eF1gH3jL6nM9qR2tU5vY8zA3cE6fH9kM2pS5uX8wB1dG4iL7oN0qT3vY6zA9cF2eH5kN8pR1tW4xB7dE0gJ3mO6qS9uY2zC5fI8lN1oR4tX7wA0bE3hK6nP9sV2yD5gJ8mQ1uX4zA7cF0eI3lO6rT9wB2dH5kN8pS1vY4xA7zE0gJ3mP6qU9tX2wC5fI8lR1oT4vY7
+    volumes:
+      - ./docker/influxdb/data:/var/lib/influxdb2
+      - ./docker/influxdb/config:/etc/influxdb2
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - ./docker/grafana/data:/var/lib/grafana
+    depends_on:
+      - influxdb

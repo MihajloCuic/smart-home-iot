@@ -2,6 +2,8 @@
 
 import time
 
+from mqtt_publisher import MQTTBatchPublisher
+
 from components import (
     DoorSensor,
     DoorLight,
@@ -18,9 +20,13 @@ class PI1Controller:
     
     def __init__(self, settings):
         self.settings = settings
+        self.device_info = settings.get("device", {})
+        self.sensors_settings = settings.get("sensors", settings)
         self.components = {}
         self.running = False
         self.simulator = None
+        self.publisher = MQTTBatchPublisher(settings.get("mqtt", {}), self.device_info)
+        self._dus1_last_alert = None
         self._init_components()
     
     def _init_components(self):
@@ -29,68 +35,108 @@ class PI1Controller:
         print("Initializing PI1 Components...")
         print("=" * 50)
         
-        if "DS1" in self.settings:
-            self.components["DS1"] = DoorSensor(self.settings["DS1"], self._on_door_change)
+        if "DS1" in self.sensors_settings:
+            self.components["DS1"] = DoorSensor(self.sensors_settings["DS1"], self._on_door_change)
             self._log_init("DS1")
         
-        if "DL" in self.settings:
-            self.components["DL"] = DoorLight(self.settings["DL"])
+        if "DL" in self.sensors_settings:
+            self.components["DL"] = DoorLight(self.sensors_settings["DL"])
             self._log_init("DL")
         
-        if "DUS1" in self.settings:
-            self.components["DUS1"] = UltrasonicSensor(self.settings["DUS1"], self._on_distance_alert)
+        if "DUS1" in self.sensors_settings:
+            self.components["DUS1"] = UltrasonicSensor(self.sensors_settings["DUS1"], self._on_distance_alert)
             self._log_init("DUS1")
         
-        if "DB" in self.settings:
-            self.components["DB"] = Buzzer(self.settings["DB"])
+        if "DB" in self.sensors_settings:
+            self.components["DB"] = Buzzer(self.sensors_settings["DB"])
             self._log_init("DB")
         
-        if "DPIR1" in self.settings:
-            self.components["DPIR1"] = MotionSensor(self.settings["DPIR1"], self._on_motion)
+        if "DPIR1" in self.sensors_settings:
+            self.components["DPIR1"] = MotionSensor(self.sensors_settings["DPIR1"], self._on_motion)
             self._log_init("DPIR1")
         
-        if "DMS" in self.settings:
-            self.components["DMS"] = MembraneSwitch(self.settings["DMS"], self._on_key_press)
+        if "DMS" in self.sensors_settings:
+            self.components["DMS"] = MembraneSwitch(self.sensors_settings["DMS"], self._on_key_press)
             self._log_init("DMS")
         
         print("=" * 50)
     
     def _log_init(self, code):
-        s = self.settings[code]
+        s = self.sensors_settings[code]
         mode = "SIM" if s.get('simulate', True) else "HW"
         print(f"  [{code}] {s.get('name', code)} ({mode})")
+
+    def _publish(self, payload):
+        payload.setdefault("device", self.device_info.get("id", "PI1"))
+        payload.setdefault("ts", time.time())
+        self.publisher.enqueue(payload)
+
+    def _publish_sensor(self, code, value, extra=None):
+        if not self.sensors_settings.get(code, {}).get("publish", True):
+            return
+        payload = {
+            "source": "sensor",
+            "sensor": code,
+            "value": value,
+            "simulated": self.sensors_settings.get(code, {}).get("simulate", True)
+        }
+        if extra:
+            payload.update(extra)
+        self._publish(payload)
+
+    def _publish_actuator(self, code, value, extra=None):
+        if not self.sensors_settings.get(code, {}).get("publish", True):
+            return
+        payload = {
+            "source": "actuator",
+            "sensor": code,
+            "value": value,
+            "simulated": self.sensors_settings.get(code, {}).get("simulate", True)
+        }
+        if extra:
+            payload.update(extra)
+        self._publish(payload)
     
     # ========== CALLBACKS ==========
     
     def _on_door_change(self, is_open):
         status = "OPENED" if is_open else "CLOSED"
         print(f"\n[EVENT] Door {status}")
+        self._publish_sensor("DS1", is_open)
         if "DL" in self.components:
             if is_open:
                 self.components["DL"].turn_on()
                 print("[AUTO] Light ON")
+                self._publish_actuator("DL", True)
             else:
                 self.components["DL"].turn_off()
                 print("[AUTO] Light OFF")
+                self._publish_actuator("DL", False)
     
     def _on_distance_alert(self, distance, is_alert):
-        if is_alert:
-            print(f"\n[ALERT] Object at {distance:.1f} cm!")
-        else:
-            print(f"\n[INFO] Object moved away ({distance:.1f} cm)")
+        self._publish_sensor("DUS1", distance, {"alert": is_alert})
+        if self._dus1_last_alert is None or is_alert != self._dus1_last_alert:
+            if is_alert:
+                print(f"\n[ALERT] Object at {distance:.1f} cm!")
+            else:
+                print(f"\n[INFO] Object moved away ({distance:.1f} cm)")
+        self._dus1_last_alert = is_alert
     
     def _on_motion(self, detected):
         if detected:
             print("\n[ALERT] Motion detected!")
+        self._publish_sensor("DPIR1", detected)
     
     def _on_key_press(self, key):
         print(f"\n[INPUT] Key: {key}")
+        self._publish_sensor("DMS", key)
     
     # ========== CONTROL ==========
     
     def start(self):
         """Start monitoring all sensors"""
         self.running = True
+        self.publisher.start()
         
         for code in ["DS1", "DUS1", "DPIR1", "DMS"]:
             if code in self.components:
@@ -107,6 +153,7 @@ class PI1Controller:
         self.running = False
         if self.simulator:
             self.simulator.stop()
+        self.publisher.stop()
         for comp in self.components.values():
             if hasattr(comp, 'stop'):
                 comp.stop()
@@ -182,21 +229,27 @@ class PI1Controller:
         elif cmd == '1':
             self.components["DL"].toggle()
             print(f"[DL] Light: {'ON' if self.components['DL'].is_on() else 'OFF'}")
+            self._publish_actuator("DL", self.components["DL"].is_on())
         elif cmd == '2':
             self.components["DL"].turn_on()
             print("[DL] Light: ON")
+            self._publish_actuator("DL", True)
         elif cmd == '3': 
             self.components["DL"].turn_off()
             print("[DL] Light: OFF")
+            self._publish_actuator("DL", False)
         elif cmd == '4':
             print("[DB] Beeping...")
             self.components["DB"].beep(0.5)
+            self._publish_actuator("DB", True, {"action": "beep"})
         elif cmd == '5':
             self.components["DB"].start_alarm()
             print("[DB] Alarm STARTED")
+            self._publish_actuator("DB", True, {"action": "alarm"})
         elif cmd == '6':
             self.components["DB"].stop_alarm()
             print("[DB] Alarm STOPPED")
+            self._publish_actuator("DB", False, {"action": "alarm"})
         
         # Simulation
         elif cmd == '7':
