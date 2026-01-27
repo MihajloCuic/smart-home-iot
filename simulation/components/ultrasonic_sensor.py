@@ -67,15 +67,14 @@ class UltrasonicSensor:
         self.thread.start()
     
     def _monitor_loop(self, interval):
-        """Monitor loop - only triggers callback on alert zone change"""
+        """Monitor loop - triggers callback each interval and on alert changes"""
         while self.running:
             dist = self.measure_distance()
             is_alert = 0 <= dist < 30
-            
-            if is_alert != self._last_alert:
-                if self.callback:
-                    self.callback(dist, is_alert)
-                self._last_alert = is_alert
+
+            if self.callback:
+                self.callback(dist, is_alert)
+            self._last_alert = is_alert
             
             time.sleep(interval)
     
