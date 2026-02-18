@@ -1,18 +1,15 @@
 import json
+import sys
 import time
 import queue
 import multiprocessing
 
-try:
-    import paho.mqtt.client as mqtt
-    MQTT_AVAILABLE = True
-except ImportError:
-    MQTT_AVAILABLE = False
-
 
 def _publisher_process(config, device_info, q):
-    if not MQTT_AVAILABLE:
-        print("[MQTT] paho-mqtt not installed. Publisher stopped.")
+    try:
+        import paho.mqtt.client as mqtt
+    except ImportError:
+        print("[MQTT] paho-mqtt not installed. Publisher stopped.", flush=True)
         return
 
     host = config.get("host", "localhost")
@@ -24,6 +21,8 @@ def _publisher_process(config, device_info, q):
     batch_interval = float(config.get("batch_interval", 2.0))
     max_batch = int(config.get("max_batch", 50))
 
+    # print(f"[MQTT] Connecting to {host}:{port} topic={topic}", flush=True)
+
     client = mqtt.Client()
     if username:
         client.username_pw_set(username, password)
@@ -31,8 +30,10 @@ def _publisher_process(config, device_info, q):
     try:
         client.connect(host, port, 60)
     except Exception as exc:
-        print(f"[MQTT] Connection failed: {exc}")
+        print(f"[MQTT] Connection failed: {exc}", flush=True)
         return
+
+    # print(f"[MQTT] Connected successfully to {host}:{port}", flush=True)
 
     client.loop_start()
 
@@ -48,7 +49,8 @@ def _publisher_process(config, device_info, q):
             "batch": True,
             "items": batch,
         })
-        client.publish(topic, payload, qos=qos)
+        result = client.publish(topic, payload, qos=qos)
+        # print(f"[MQTT] Published {len(batch)} items (rc={result.rc})", flush=True)
         batch = []
         last_flush = time.monotonic()
 
@@ -91,7 +93,9 @@ class MQTTBatchPublisher:
 
     def start(self):
         if not self.enabled:
+            print("[MQTT] Publisher disabled in settings", flush=True)
             return
+        # print(f"[MQTT] Starting publisher process (host={self.config.get('host')}, port={self.config.get('port')})", flush=True)
         self._process = multiprocessing.Process(
             target=_publisher_process,
             args=(self.config, self.device_info, self._queue),
