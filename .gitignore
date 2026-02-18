@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.venv/
+venv/
+
+# Docker runtime data (generated at runtime, not config)
+docker/influxdb/data/
+docker/grafana/data/
+
+# OS
+.DS_Store
+Thumbs.db
