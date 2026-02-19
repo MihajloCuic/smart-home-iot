@@ -4,7 +4,7 @@ Smart Home IoT - Multi-PI Controller
 """
 
 from settings import load_settings
-from controllers import PI1Controller, PI3Controller
+from controllers import PI1Controller, PI2Controller, PI3Controller
 
 
 # ========== HELP MENUS ==========
@@ -54,6 +54,26 @@ PI3_HELP = """
   p+ - Person enters  p- - Person leaves
 =================================================="""
 
+PI2_HELP = """
+==================================================
+    PI2 - KITCHEN CONTROLLER (ALARM + timer)
+==================================================
+    s - Status          h - Help
+    b - Back to PI menu q - Quit
+
+    ACTUATORS:
+    1 - Demo display    2 - Start 60s timer
+    3 - Stop alarm      4 - Start alarm
+
+    SIMULATION:
+    7 - Door OPEN       9 - Trigger motion
+    8 - Door CLOSE      0 - Press BTN
+
+    TIMER (Rule 8):
+    Web app sets time -> 4SD displays
+    BTN adds N seconds (configurable) or stops blinking when expired
+=================================================="""
+
 
 # ========== SHARED STATE ==========
 
@@ -68,6 +88,7 @@ person_count = [0]
 
 CONTROLLERS = {
     '1': ("PI1 - Entrance Controller", PI1Controller, PI1_HELP, 'PI1'),
+    '2': ("PI2 - Kitchen Controller",  PI2Controller, PI2_HELP, 'PI2'),
     '3': ("PI3 - Bedroom Controller",  PI3Controller, PI3_HELP, 'PI3'),
 }
 

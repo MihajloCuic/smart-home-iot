@@ -9,6 +9,9 @@ from components.dht_sensor import DHTSensor
 from components.lcd_display import LCDDisplay
 from components.ir_receiver import IRReceiver
 from components.rgb_light import RGBLight
+from components.four_digit_display import FourDigitDisplay
+from components.button import Button
+from components.gyroscope import Gyroscope
 
 __all__ = [
     'BaseComponent',
@@ -22,4 +25,7 @@ __all__ = [
     'LCDDisplay',
     'IRReceiver',
     'RGBLight',
+    'FourDigitDisplay',
+    'Button',
+    'Gyroscope',
 ]

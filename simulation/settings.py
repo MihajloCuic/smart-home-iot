@@ -2,7 +2,7 @@ import json
 import os
 
 
-def load_settings(filePath='settings.json', pi_key=None):
+def load_settings(filePath='settings_clean.json', pi_key=None):
     if not os.path.isabs(filePath):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         filePath = os.path.join(base_dir, filePath)
