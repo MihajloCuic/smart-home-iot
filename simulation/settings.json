@@ -12,7 +12,7 @@
     },
     "influx": {
         "url": "http://localhost:8086",
-        "token": "REPLACE_ME",
+        "token": "mJ9kL2pN8qR5tY7vX3bZ6cF4gH1jK0mN9pQ8sT5wX2yA7bC4eF1gH3jL6nM9qR2tU5vY8zA3cE6fH9kM2pS5uX8wB1dG4iL7oN0qT3vY6zA9cF2eH5kN8pR1tW4xB7dE0gJ3mO6qS9uY2zC5fI8lN1oR4tX7wA0bE3hK6nP9sV2yD5gJ8mQ1uX4zA7cF0eI3lO6rT9wB2dH5kN8pS1vY4xA7zE0gJ3mP6qU9tX2wC5fI8lR1oT4vY7",
         "org": "smart-home",
         "bucket": "iot"
     },
@@ -73,7 +73,7 @@
   },
   "influx": {
     "url": "http://localhost:8086",
-    "token": "REPLACE_ME",
+    "token": "mJ9kL2pN8qR5tY7vX3bZ6cF4gH1jK0mN9pQ8sT5wX2yA7bC4eF1gH3jL6nM9qR2tU5vY8zA3cE6fH9kM2pS5uX8wB1dG4iL7oN0qT3vY6zA9cF2eH5kN8pR1tW4xB7dE0gJ3mO6qS9uY2zC5fI8lN1oR4tX7wA0bE3hK6nP9sV2yD5gJ8mQ1uX4zA7cF0eI3lO6rT9wB2dH5kN8pS1vY4xA7zE0gJ3mP6qU9tX2wC5fI8lR1oT4vY7",
     "org": "smart-home",
     "bucket": "iot"
   },
@@ -134,7 +134,7 @@
   },
   "influx": {
     "url": "http://localhost:8086",
-    "token": "REPLACE_ME",
+    "token": "mJ9kL2pN8qR5tY7vX3bZ6cF4gH1jK0mN9pQ8sT5wX2yA7bC4eF1gH3jL6nM9qR2tU5vY8zA3cE6fH9kM2pS5uX8wB1dG4iL7oN0qT3vY6zA9cF2eH5kN8pR1tW4xB7dE0gJ3mO6qS9uY2zC5fI8lN1oR4tX7wA0bE3hK6nP9sV2yD5gJ8mQ1uX4zA7cF0eI3lO6rT9wB2dH5kN8pS1vY4xA7zE0gJ3mP6qU9tX2wC5fI8lR1oT4vY7",
     "org": "smart-home",
     "bucket": "iot"
   },
