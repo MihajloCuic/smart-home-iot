@@ -26,8 +26,8 @@ class MembraneSwitch(BaseComponent):
         ['*', '0', '#', 'D']
     ]
 
-    def __init__(self, settings, publisher=None, on_key=None):
-        super().__init__('DMS', settings, publisher)
+    def __init__(self, code, settings, publisher=None, on_key=None):
+        super().__init__(code, settings, publisher)
         self.row_pins = settings.get('row_pins', [6, 13, 19, 26])
         self.col_pins = settings.get('col_pins', [12, 16, 20, 21])
         self.on_key = on_key  # Optional external hook for controller logic
@@ -87,7 +87,7 @@ class MembraneSwitch(BaseComponent):
         Prints, publishes, then calls the optional external hook.
         """
         self.last_key = key
-        print(f"\n[DMS] Key pressed: '{key}'")
+        print(f"\n[{self.code}] Key pressed: '{key}'")
         self._publish_sensor(key)
 
         if self.on_key:

@@ -31,9 +31,9 @@ def _normalize_value(value):
 
 
 def main():
-    settings = load_settings()
-    mqtt_cfg = settings.get("mqtt", {})
-    influx_cfg = settings.get("influx", {})
+    all_settings = load_settings()
+    mqtt_cfg = all_settings.get("mqtt", {})
+    influx_cfg = all_settings.get("influx", {})
 
     if not MQTT_AVAILABLE:
         print("[SERVER] paho-mqtt not installed.")

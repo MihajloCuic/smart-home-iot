@@ -20,8 +20,8 @@ class DoorSensor(BaseComponent):
     for controller-level automation (e.g. turning the light on when door opens).
     """
 
-    def __init__(self, settings, publisher=None, on_change=None):
-        super().__init__('DS1', settings, publisher)
+    def __init__(self, code, settings, publisher=None, on_change=None):
+        super().__init__(code, settings, publisher)
         self.pin = settings.get('pin', 17)
         self.on_change = on_change  # Optional external hook for controller logic
 
@@ -67,7 +67,7 @@ class DoorSensor(BaseComponent):
         Prints, publishes, then calls the optional external hook.
         """
         status = "OPENED" if is_open else "CLOSED"
-        print(f"\n[DS1] Door {status}")
+        print(f"\n[{self.code}] Door {status}")
         self._publish_sensor(is_open)
 
         if self.on_change:

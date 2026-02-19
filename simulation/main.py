@@ -4,9 +4,7 @@ Smart Home IoT - Multi-PI Controller
 """
 
 from settings import load_settings
-from controllers import PI1Controller
-# from controllers import PI2Controller  # uncomment when implemented
-# from controllers import PI3Controller  # uncomment when implemented
+from controllers import PI1Controller, PI3Controller
 
 
 # ========== HELP MENUS ==========
@@ -26,18 +24,51 @@ PI1_HELP = """
   SIMULATION:
   7 - Door OPEN       9 - Trigger motion
   8 - Door CLOSE      0 - Press key
+
+  OCCUPANCY (Rule 5):
+  p+ - Person enters  p- - Person leaves
 =================================================="""
 
-# Add PI2_HELP and PI3_HELP here when implemented
+PI3_HELP = """
+==================================================
+  PI3 - BEDROOM CONTROLLER
+==================================================
+  s - Status          h - Help
+  b - Back to PI menu q - Quit
+
+  ACTUATORS:
+  1 - Toggle light    4 - Beep
+  2 - Light ON        5 - Start alarm
+  3 - Light OFF       6 - Stop alarm
+
+  RGB LIGHT (Rule 9):
+  r - Red             g - Green
+  b - Blue            x - RGB off
+
+  SIMULATION:
+  7 - Door OPEN       9 - Trigger motion
+  8 - Door CLOSE      0 - Press key
+  i - Inject IR code
+
+  OCCUPANCY (Rule 5):
+  p+ - Person enters  p- - Person leaves
+=================================================="""
+
+
+# ========== SHARED STATE ==========
+
+# Mutable list so both PI controllers share the same person count.
+# A lambda over person_count[0] always reads the current value.
+# Rule 5: alarm triggers when person_count[0] == 0 and motion is detected.
+person_count = [0]
 
 
 # ========== CONTROLLER REGISTRY ==========
-# Each entry: key -> (display label, ControllerClass, help_text)
+# Each entry: key -> (display label, ControllerClass, help_text, pi_key)
 
 CONTROLLERS = {
-    '1': ("PI1 — Entrance Controller", PI1Controller, PI1_HELP),
-    # '2': ("PI2 — Kitchen Controller",  PI2Controller, PI2_HELP),
-    # '3': ("PI3 — Bedroom Controller",  PI3Controller, PI3_HELP),
+    '1': ("PI1 - Entrance Controller", PI1Controller, PI1_HELP, 'PI1'),
+    '3': ("PI3 - Bedroom Controller",  PI3Controller, PI3_HELP, 'PI3'),
 }
 
 
@@ -52,7 +83,7 @@ def choose_pi():
     print("  SMART HOME IoT")
     print("=" * 50)
     print("  Select a PI device to control:\n")
-    for key, (label, _, _) in CONTROLLERS.items():
+    for key, (label, _, _, _) in CONTROLLERS.items():
         print(f"    {key} - {label}")
     print("\n    q - Quit")
     print("=" * 50)
@@ -75,9 +106,9 @@ def choose_pi():
 def run_loop(controller, help_text):
     """
     Generic interactive command loop for any controller.
-    Returns when the user types 'b' (back) or 'q' (quit).
-    Returns True  → caller should show PI menu again
-    Returns False → caller should exit the program
+    Handles 'p+' and 'p-' for occupancy management (Rule 5).
+    Returns True  -> caller should show PI menu again
+    Returns False -> caller should exit the program
     """
     print(f"\n[SYSTEM] Running...  (press 'h' for help, 'b' to go back)\n")
     print(help_text)
@@ -101,6 +132,15 @@ def run_loop(controller, help_text):
             print(help_text)
         elif cmd == 's':
             controller.show_status()
+
+        # Occupancy management (Rule 5)
+        elif cmd == 'p+':
+            person_count[0] = person_count[0] + 1
+            print(f"[HOME] Persons in home: {person_count[0]}")
+        elif cmd == 'p-':
+            person_count[0] = max(0, person_count[0] - 1)
+            print(f"[HOME] Persons in home: {person_count[0]}")
+
         else:
             try:
                 result = controller.handle_command(cmd)
@@ -113,21 +153,23 @@ def run_loop(controller, help_text):
 # ========== MAIN ==========
 
 def main():
-    """Main entry point — loads settings then loops over the PI selection menu"""
-    settings = load_settings()
+    """Main entry point - loads settings then loops over the PI selection menu"""
+    all_settings = load_settings()  # full dict: {"mqtt": {...}, "influx": {...}, "PI1": {...}, ...}
+    mqtt_cfg = all_settings.get("mqtt", {})
 
     while True:
         choice = choose_pi()
 
         if choice is None:
-            # User chose to quit from the PI menu
             print("\n[SYSTEM] Goodbye!\n")
             break
 
-        label, ControllerClass, help_text = CONTROLLERS[choice]
+        label, ControllerClass, help_text, pi_key = CONTROLLERS[choice]
+        pi_settings = all_settings[pi_key]
 
         print(f"\n[SYSTEM] Starting {label}...")
-        controller = ControllerClass(settings)
+        # Both controllers receive shared mqtt_cfg and a lambda over the shared person_count list
+        controller = ControllerClass(pi_settings, mqtt_cfg=mqtt_cfg, get_person_count=lambda: person_count[0])
         controller.start()
 
         keep_running = run_loop(controller, help_text)

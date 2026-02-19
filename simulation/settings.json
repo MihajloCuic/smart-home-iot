@@ -1,9 +1,4 @@
 {
-    "device": {
-        "id": "PI1",
-        "name": "Entrance Controller",
-        "location": "Front Door"
-    },
     "mqtt": {
         "enabled": true,
         "host": "localhost",
@@ -21,44 +16,132 @@
         "org": "smart-home",
         "bucket": "iot"
     },
-    "sensors": {
-        "DS1": {
-            "name": "Door Sensor",
-            "pin": 17,
-            "simulate": true,
-            "publish": true
+    "PI1": {
+        "device": {
+            "id": "PI1",
+            "name": "Entrance Controller",
+            "location": "Front Door"
         },
-        "DL":  {
-            "name": "Door Light",
-            "pin": 27,
-            "simulate": true,
-            "publish": true
+        "alarm": {
+            "pin": "1234",
+            "arm_delay": 5,
+            "grace_period": 30
         },
-        "DUS1": {
-            "name":  "Door Ultrasonic Sensor",
-            "trigger_pin": 23,
-            "echo_pin": 24,
-            "simulate": true,
-            "publish": true
+        "sensors": {
+            "DS1": {
+                "name": "Door Sensor",
+                "pin": 17,
+                "simulate": true,
+                "publish": true
+            },
+            "DL": {
+                "name": "Door Light",
+                "pin": 27,
+                "simulate": false,
+                "publish": true
+            },
+            "DUS1": {
+                "name": "Door Ultrasonic Sensor",
+                "trigger_pin": 23,
+                "echo_pin": 24,
+                "simulate": true,
+                "publish": true
+            },
+            "DB": {
+                "name": "Door Buzzer",
+                "pin": 22,
+                "simulate": true,
+                "publish": true
+            },
+            "DPIR1": {
+                "name": "Door Motion Sensor",
+                "pin": 5,
+                "simulate": true,
+                "publish": true
+            },
+            "DMS": {
+                "name": "Door Membrane Switch",
+                "row_pins": [6, 13, 19, 26],
+                "col_pins": [12, 16, 20, 21],
+                "simulate": true,
+                "publish": true
+            }
+        }
+    },
+    "PI3": {
+        "device": {
+            "id": "PI3",
+            "name": "Bedroom Controller",
+            "location": "Bedroom"
         },
-        "DB": {
-            "name": "Door Buzzer",
-            "pin": 22,
-            "simulate": true,
-            "publish": true
+        "alarm": {
+            "pin": "1234",
+            "arm_delay": 5,
+            "grace_period": 30
         },
-        "DPIR1": {
-            "name": "Door Motion Sensor",
-            "pin": 5,
-            "simulate": true,
-            "publish": true
-        },
-        "DMS": {
-            "name": "Door Membrane Switch",
-            "row_pins": [6, 13, 19, 26],
-            "col_pins": [12, 16, 20, 21],
-            "simulate": true,
-            "publish": true
+        "sensors": {
+            "DS2": {
+                "name": "Bedroom Door Sensor",
+                "pin": 17,
+                "simulate": true,
+                "publish": true
+            },
+            "DL1": {
+                "name": "Bedroom Door Light",
+                "pin": 27,
+                "simulate": true,
+                "publish": true
+            },
+            "DB": {
+                "name": "Bedroom Buzzer",
+                "pin": 22,
+                "simulate": true,
+                "publish": true
+            },
+            "DPIR3": {
+                "name": "Bedroom Motion Sensor",
+                "pin": 5,
+                "simulate": true,
+                "publish": true
+            },
+            "DMS": {
+                "name": "Bedroom Keypad",
+                "row_pins": [6, 13, 19, 26],
+                "col_pins": [12, 16, 20, 21],
+                "simulate": true,
+                "publish": true
+            },
+            "DHT1": {
+                "name": "DHT Sensor 1",
+                "pin": 4,
+                "simulate": true,
+                "publish": true
+            },
+            "DHT2": {
+                "name": "DHT Sensor 2",
+                "pin": 17,
+                "simulate": true,
+                "publish": true
+            },
+            "LCD": {
+                "name": "LCD Display",
+                "address": "0x27",
+                "simulate": true
+            },
+            "IR": {
+                "name": "IR Receiver",
+                "pin": 27,
+                "simulate": true,
+                "publish": true
+            },
+            "BRGB": {
+                "name": "RGB Light",
+                "pin_r": 13,
+                "pin_g": 19,
+                "pin_b": 26,
+                "simulate": true,
+                "publish": true
+            }
         }
     }
 }

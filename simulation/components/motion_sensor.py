@@ -19,8 +19,8 @@ class MotionSensor(BaseComponent):
     Publishes its own events and optionally calls on_motion for controller logic.
     """
 
-    def __init__(self, settings, publisher=None, on_motion=None):
-        super().__init__('DPIR1', settings, publisher)
+    def __init__(self, code, settings, publisher=None, on_motion=None):
+        super().__init__(code, settings, publisher)
         self.pin = settings.get('pin', 5)
         self.on_motion = on_motion  # Optional external hook for controller logic
 
@@ -52,7 +52,7 @@ class MotionSensor(BaseComponent):
         self.thread.start()
 
     def _monitor_loop(self):
-        """Fire internal handler only on rising edge (no motion → motion)"""
+        """Fire internal handler only on rising edge (no motion -> motion)"""
         while self.running:
             current = self.read()
             if current and not self._last_state:
@@ -65,7 +65,7 @@ class MotionSensor(BaseComponent):
         Internal handler: called on rising edge of motion detection.
         Prints, publishes, then calls the optional external hook.
         """
-        print("\n[DPIR1] Motion detected!")
+        print(f"\n[{self.code}] Motion detected!")
         self._publish_sensor(True)
 
         if self.on_motion:
