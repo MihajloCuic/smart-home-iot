@@ -43,7 +43,7 @@ PI3_HELP = """
 
   RGB LIGHT (Rule 9):
   r - Red             g - Green
-  b - Blue            x - RGB off
+  bu - Blue            x - RGB off
 
   SIMULATION:
   7 - Door OPEN       9 - Trigger motion

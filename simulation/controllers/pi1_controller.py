@@ -14,7 +14,7 @@ from components import (
     MembraneSwitch,
 )
 from controllers.alarm_state_machine import AlarmStateMachine
-from simulators import SensorSimulator
+from simulators import PI1Simulator
 
 
 class PI1Controller:
@@ -268,8 +268,8 @@ class PI1Controller:
                 else:
                     self.components[code].start_monitoring()
 
-        self.simulator = SensorSimulator(self.components)
-        self.simulator.start_all()
+        self.simulator = PI1Simulator(self.components)
+        self.simulator.start()
 
     def stop(self):
         """Stop all monitoring threads and publisher"""

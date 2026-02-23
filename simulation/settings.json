@@ -56,7 +56,7 @@
             "DPIR1": {
                 "name": "Door Motion Sensor",
                 "pin": 5,
-                "simulate": true,
+                "simulate": false,
                 "publish": true
             },
             "DMS": {

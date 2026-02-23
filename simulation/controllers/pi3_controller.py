@@ -17,7 +17,7 @@ from components import (
     RGBLight,
 )
 from controllers.alarm_state_machine import AlarmStateMachine
-from simulators import SensorSimulator
+from simulators import PI3Simulator
 
 
 class PI3Controller:
@@ -352,8 +352,8 @@ class PI3Controller:
             )
             self._lcd_thread.start()
 
-        self.simulator = SensorSimulator(self.components)
-        self.simulator.start_all()
+        self.simulator = PI3Simulator(self.components)
+        self.simulator.start()
 
     def stop(self):
         """Stop all monitoring threads and publisher"""
@@ -468,7 +468,7 @@ class PI3Controller:
             self.components["BRGB"].set_red()
         elif cmd == 'g':
             self.components["BRGB"].set_green()
-        elif cmd == 'b':
+        elif cmd == 'bu':
             self.components["BRGB"].set_blue()
         elif cmd == 'x':
             self.components["BRGB"].turn_off()
