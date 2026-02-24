@@ -1,7 +1,7 @@
 {
     "mqtt": {
         "enabled": true,
-        "host": "localhost",
+        "host": "192.168.107.154",
         "port": 1883,
         "username": null,
         "password": null,
@@ -11,7 +11,7 @@
         "max_batch": 50
     },
     "influx": {
-        "url": "http://localhost:8086",
+        "url": "http://192.168.107.154:8086",
         "token": "mJ9kL2pN8qR5tY7vX3bZ6cF4gH1jK0mN9pQ8sT5wX2yA7bC4eF1gH3jL6nM9qR2tU5vY8zA3cE6fH9kM2pS5uX8wB1dG4iL7oN0qT3vY6zA9cF2eH5kN8pR1tW4xB7dE0gJ3mO6qS9uY2zC5fI8lN1oR4tX7wA0bE3hK6nP9sV2yD5gJ8mQ1uX4zA7cF0eI3lO6rT9wB2dH5kN8pS1vY4xA7zE0gJ3mP6qU9tX2wC5fI8lR1oT4vY7",
         "org": "smart-home",
         "bucket": "iot"
@@ -36,8 +36,8 @@
             },
             "DL": {
                 "name": "Door Light",
-                "pin": 27,
-                "simulate": false,
+                "pin": 18,
+                "simulate": true,
                 "publish": true
             },
             "DUS1": {
@@ -55,13 +55,13 @@
             },
             "DPIR1": {
                 "name": "Door Motion Sensor",
-                "pin": 5,
+                "pin": 4,
                 "simulate": false,
                 "publish": true
             },
             "DMS": {
                 "name": "Door Membrane Switch",
-                "row_pins": [6, 13, 19, 26],
+                "row_pins": [25, 8, 7, 1],
                 "col_pins": [12, 16, 20, 21],
                 "simulate": true,
                 "publish": true
@@ -126,20 +126,20 @@
             "LCD": {
                 "name": "LCD Display",
                 "address": "0x27",
-                "simulate": true
+                "simulate": false
             },
             "IR": {
                 "name": "IR Receiver",
                 "pin": 27,
-                "simulate": true,
+                "simulate": false,
                 "publish": true
             },
             "BRGB": {
                 "name": "RGB Light",
-                "pin_r": 13,
-                "pin_g": 19,
-                "pin_b": 26,
-                "simulate": true,
+                "pin_r": 12,
+                "pin_g": 13,
+                "pin_b": 19,
+                "simulate": false,
                 "publish": true
             }
         }
