@@ -9,6 +9,7 @@ const updated = document.getElementById('updated');
 const alarmOffBtn = document.getElementById('alarmOff');
 const timerSetBtn = document.getElementById('timerSetBtn');
 const timerIncBtn = document.getElementById('timerIncBtn');
+const timerStopBtn = document.getElementById('timerStopBtn');
 
 const timerSetInput = document.getElementById('timerSetInput');
 const timerIncInput = document.getElementById('timerIncInput');
@@ -54,6 +55,10 @@ timerIncBtn.addEventListener('click', async () => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ seconds })
   });
+});
+
+timerStopBtn.addEventListener('click', async () => {
+  await fetch('/api/timer/stop', { method: 'POST' });
 });
 
 setInterval(fetchStatus, 1000);

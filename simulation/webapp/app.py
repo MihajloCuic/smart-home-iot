@@ -137,6 +137,12 @@ def api_timer_increment():
     return jsonify({"ok": True})
 
 
+@app.route("/api/timer/stop", methods=["POST"])
+def api_timer_stop():
+    publish_command("timer_stop", {})
+    return jsonify({"ok": True})
+
+
 def publish_command(command, extra):
     if mqtt_client is None:
         return

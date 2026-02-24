@@ -285,6 +285,15 @@ class PI2Controller:
             self.timer_increment_seconds = max(1, int(seconds))
             self._publish_status()
 
+    def stop_timer_blink(self):
+        """Stop blinking and reset timer to 00:00."""
+        with self._timer_lock:
+            self._blink_active = False
+            self.timer_remaining = 0
+            self.timer_running = False
+            self._show_time_locked(0)
+            self._publish_status()
+
     # ========== MQTT COMMANDS (WEB APP) ==========
 
     def _start_mqtt_commands(self, mqtt_cfg):
@@ -316,6 +325,8 @@ class PI2Controller:
                 self.set_timer(payload.get("seconds", 0))
             elif command == "timer_increment_set":
                 self.set_timer_increment(payload.get("seconds", self.timer_increment_seconds))
+            elif command == "timer_stop":
+                self.stop_timer_blink()
 
         self._mqtt_cmd_client = mqtt.Client()
         if username:
