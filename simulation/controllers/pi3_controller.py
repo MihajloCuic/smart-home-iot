@@ -49,7 +49,7 @@ class PI3Controller:
     IR_CODE_GREEN  = 'GREEN'
     IR_CODE_BLUE   = 'BLUE'
 
-    def __init__(self, settings, mqtt_cfg=None, get_person_count=None):
+    def __init__(self, settings, mqtt_cfg=None, get_person_count=None, set_person_count=None):
         self.settings = settings
         self.device_info = settings.get("device", {})
         self.sensors_settings = settings.get("sensors", {})
@@ -61,6 +61,7 @@ class PI3Controller:
 
         # get_person_count is a callable returning the current occupant count
         self.get_person_count = get_person_count or (lambda: 0)
+        self.set_person_count = set_person_count
 
         # Publisher shared with all components
         self.publisher = MQTTBatchPublisher(mqtt_cfg or {}, self.device_info)

@@ -62,6 +62,24 @@ U drugom terminalu pokrenuti:
 python simulation/main.py
 ```
 
+## 6.1) Pokretanje PI2 kontrolera
+U istom `main.py` meniju izabrati `2 - PI2 - Kitchen Controller`.
+
+## 6.2) Web aplikacija (ALARM + timer)
+U novom terminalu pokrenuti:
+
+```
+python simulation/webapp/app.py
+```
+
+Web UI je na: `http://localhost:5000`
+
+Funkcije:
+- Deaktivacija alarma
+- Setovanje vremena tajmera
+- Setovanje BTN increment vrednosti
+- Real-time status (alarm, timer, display)
+
 ## 7) Provera podataka u InfluxDB (Data Explorer)
 U Influx UI (Data Explorer) nalepiti Flux upit:
 
@@ -76,3 +94,5 @@ from(bucket: "iot")
 2. Login:
 	 - user: `admin`
 	 - pass: `admin123`
+
+PI2 dashboard (import JSON): `grafana/smart-home-pi2-dashboard.json`

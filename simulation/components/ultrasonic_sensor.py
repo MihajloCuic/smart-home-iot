@@ -21,8 +21,8 @@ class UltrasonicSensor(BaseComponent):
 
     ALERT_THRESHOLD_CM = 30
 
-    def __init__(self, settings, publisher=None, on_alert=None):
-        super().__init__('DUS1', settings, publisher)
+    def __init__(self, code, settings, publisher=None, on_alert=None):
+        super().__init__(code, settings, publisher)
         self.trigger_pin = settings.get('trigger_pin', 23)
         self.echo_pin = settings.get('echo_pin', 24)
         self.on_alert = on_alert  # Optional external hook for controller logic
@@ -92,9 +92,9 @@ class UltrasonicSensor(BaseComponent):
         # Print only on state transitions to avoid console spam
         if is_alert != self._last_alert:
             if is_alert:
-                print(f"\n[DUS1] ALERT — Object at {distance:.1f} cm!")
+                print(f"\n[{self.code}] ALERT — Object at {distance:.1f} cm!")
             else:
-                print(f"\n[DUS1] Object moved away ({distance:.1f} cm)")
+                print(f"\n[{self.code}] Object moved away ({distance:.1f} cm)")
 
         self._publish_sensor(distance, {'alert': is_alert})
 

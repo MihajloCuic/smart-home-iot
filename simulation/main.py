@@ -4,7 +4,7 @@ Smart Home IoT - Multi-PI Controller
 """
 
 from settings import load_settings
-from controllers import PI1Controller, PI3Controller
+from controllers import PI1Controller, PI2Controller, PI3Controller
 
 
 # ========== HELP MENUS ==========
@@ -54,6 +54,29 @@ PI3_HELP = """
   p+ - Person enters  p- - Person leaves
 =================================================="""
 
+PI2_HELP = """
+==================================================
+    PI2 - KITCHEN CONTROLLER
+==================================================
+    s - Status          h - Help
+    b - Back to PI menu q - Quit
+
+    ACTUATORS:
+    5 - Start alarm     6 - Stop alarm
+
+    TIMER (Rule 8):
+    t - Set timer sec   i - Set BTN increment
+    k - Press button
+
+    SIMULATION:
+    7 - Door OPEN       9 - Trigger motion
+    8 - Door CLOSE      u - Set distance
+    g - Gyro movement
+
+    OCCUPANCY (Rule 5):
+    p+ - Person enters  p- - Person leaves
+=================================================="""
+
 
 # ========== SHARED STATE ==========
 
@@ -68,6 +91,7 @@ person_count = [0]
 
 CONTROLLERS = {
     '1': ("PI1 - Entrance Controller", PI1Controller, PI1_HELP, 'PI1'),
+    '2': ("PI2 - Kitchen Controller",  PI2Controller, PI2_HELP, 'PI2'),
     '3': ("PI3 - Bedroom Controller",  PI3Controller, PI3_HELP, 'PI3'),
 }
 
@@ -137,9 +161,13 @@ def run_loop(controller, help_text):
         elif cmd == 'p+':
             person_count[0] = person_count[0] + 1
             print(f"[HOME] Persons in home: {person_count[0]}")
+            if hasattr(controller, "publish_status"):
+                controller.publish_status()
         elif cmd == 'p-':
             person_count[0] = max(0, person_count[0] - 1)
             print(f"[HOME] Persons in home: {person_count[0]}")
+            if hasattr(controller, "publish_status"):
+                controller.publish_status()
 
         else:
             try:
@@ -169,7 +197,15 @@ def main():
 
         print(f"\n[SYSTEM] Starting {label}...")
         # Both controllers receive shared mqtt_cfg and a lambda over the shared person_count list
-        controller = ControllerClass(pi_settings, mqtt_cfg=mqtt_cfg, get_person_count=lambda: person_count[0])
+        def set_person_count(value):
+            person_count[0] = max(0, int(value))
+
+        controller = ControllerClass(
+            pi_settings,
+            mqtt_cfg=mqtt_cfg,
+            get_person_count=lambda: person_count[0],
+            set_person_count=set_person_count,
+        )
         controller.start()
 
         keep_running = run_loop(controller, help_text)

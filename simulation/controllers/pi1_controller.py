@@ -37,7 +37,7 @@ class PI1Controller:
     MOTION_LIGHT_TIMEOUT  = 10   # Rule 1: seconds light stays on after motion
     DOOR_OPEN_ALARM_DELAY = 5    # Rule 3: seconds before alarm if door stays open
 
-    def __init__(self, settings, mqtt_cfg=None, get_person_count=None):
+    def __init__(self, settings, mqtt_cfg=None, get_person_count=None, set_person_count=None):
         self.settings = settings
         self.device_info = settings.get("device", {})
         self.sensors_settings = settings.get("sensors", {})
@@ -50,6 +50,7 @@ class PI1Controller:
         # get_person_count is a callable returning the current occupant count
         # Defaults to always-zero (alarm fires on any motion) if not provided
         self.get_person_count = get_person_count or (lambda: 0)
+        self.set_person_count = set_person_count
 
         # Publisher shared with all components
         self.publisher = MQTTBatchPublisher(mqtt_cfg or {}, self.device_info)
@@ -100,7 +101,7 @@ class PI1Controller:
 
         if "DUS1" in s:
             self.components["DUS1"] = UltrasonicSensor(
-                s["DUS1"],
+                'DUS1', s["DUS1"],
                 publisher=self.publisher,
             )
             self._log_init("DUS1")

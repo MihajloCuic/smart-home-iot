@@ -112,6 +112,18 @@ class AlarmStateMachine:
                 self._cancel_grace_timer_locked()
                 self._enter_alarming_locked()
 
+    def force_disarm(self):
+        """Force alarm state to DISARMED (used by web app deactivation)."""
+        with self._lock:
+            self._cancel_arm_timer_locked()
+            self._cancel_grace_timer_locked()
+            was_alarming = self._state == self.ALARMING
+            self._state = self.DISARMED
+            self._pin_buffer.clear()
+
+        if was_alarming and self._on_alarm_stop:
+            self._on_alarm_stop()
+
     # ========== INTERNAL TRANSITIONS (called while holding _lock) ==========
 
     def _process_pin(self, entered):

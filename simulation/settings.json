@@ -1,7 +1,7 @@
 {
     "mqtt": {
         "enabled": true,
-        "host": "192.168.107.154",
+        "host": "localhost",
         "port": 1883,
         "username": null,
         "password": null,
@@ -11,7 +11,7 @@
         "max_batch": 50
     },
     "influx": {
-        "url": "http://192.168.107.154:8086",
+        "url": "http://localhost:8086",
         "token": "mJ9kL2pN8qR5tY7vX3bZ6cF4gH1jK0mN9pQ8sT5wX2yA7bC4eF1gH3jL6nM9qR2tU5vY8zA3cE6fH9kM2pS5uX8wB1dG4iL7oN0qT3vY6zA9cF2eH5kN8pR1tW4xB7dE0gJ3mO6qS9uY2zC5fI8lN1oR4tX7wA0bE3hK6nP9sV2yD5gJ8mQ1uX4zA7cF0eI3lO6rT9wB2dH5kN8pS1vY4xA7zE0gJ3mP6qU9tX2wC5fI8lR1oT4vY7",
         "org": "smart-home",
         "bucket": "iot"
@@ -63,6 +63,94 @@
                 "name": "Door Membrane Switch",
                 "row_pins": [25, 8, 7, 1],
                 "col_pins": [12, 16, 20, 21],
+                "simulate": true,
+                "publish": true
+            }
+        }
+    },
+    "PI2": {
+        "device": {
+            "id": "PI2",
+            "name": "Kitchen Controller",
+            "location": "Kitchen"
+        },
+        "alarm": {
+            "pin": "1234",
+            "arm_delay": 5,
+            "grace_period": 30
+        },
+        "timer": {
+            "initial_seconds": 0,
+            "increment_seconds": 10
+        },
+        "mqtt_commands": {
+            "enabled": true,
+            "topic": "iot/commands"
+        },
+        "sensors": {
+            "DS2": {
+                "name": "Kitchen Door Sensor",
+                "pin": 17,
+                "simulate": true,
+                "publish": true
+            },
+            "DUS2": {
+                "name": "Kitchen Ultrasonic Sensor",
+                "trigger_pin": 23,
+                "echo_pin": 24,
+                "simulate": true,
+                "publish": true
+            },
+            "DPIR2": {
+                "name": "Kitchen Motion Sensor",
+                "pin": 5,
+                "simulate": true,
+                "publish": true
+            },
+            "4SD": {
+                "name": "4-Digit 7-Segment Display",
+                "segment_pins": {
+                    "a": 11,
+                    "b": 4,
+                    "c": 23,
+                    "d": 8,
+                    "e": 7,
+                    "f": 10,
+                    "g": 18
+                },
+                "decimal_pin": 25,
+                "digit_pins": {
+                    "d1": 22,
+                    "d2": 27,
+                    "d3": 17,
+                    "d4": 24
+                },
+                "simulate": true,
+                "publish": true
+            },
+            "BTN": {
+                "name": "Kitchen Button",
+                "pin": 6,
+                "simulate": true,
+                "publish": true
+            },
+            "DHT3": {
+                "name": "Kitchen DHT",
+                "pin": 4,
+                "simulate": true,
+                "publish": true
+            },
+            "GSG": {
+                "name": "Gyroscope",
+                "sda": 2,
+                "scl": 3,
+                "simulate": true,
+                "auto_simulate": false,
+                "publish": true
+            },
+            "DB": {
+                "name": "Kitchen Buzzer",
+                "pin": 22,
                 "simulate": true,
                 "publish": true
             }
