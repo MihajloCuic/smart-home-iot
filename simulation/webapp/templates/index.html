@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Home PI2</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Kitchen Control (PI2)</h1>
+      <p class="subtitle">Alarm + Timer web control</p>
+    </header>
+
+    <section class="card">
+      <h2>Alarm</h2>
+      <div class="row">
+        <div class="label">State</div>
+        <div id="alarmState" class="value">-</div>
+      </div>
+      <button id="alarmOff" class="btn danger">Deactivate Alarm</button>
+    </section>
+
+    <section class="card">
+      <h2>Timer</h2>
+      <div class="row">
+        <div class="label">Remaining</div>
+        <div id="timerRemaining" class="value">00:00</div>
+      </div>
+      <div class="row">
+        <div class="label">Blinking</div>
+        <div id="timerBlinking" class="value">No</div>
+      </div>
+      <div class="row">
+        <div class="label">BTN Increment</div>
+        <div id="timerIncrement" class="value">10s</div>
+      </div>
+      <div class="grid">
+        <div>
+          <label>Set timer (seconds)</label>
+          <input id="timerSetInput" type="number" min="0" value="120" />
+          <button id="timerSetBtn" class="btn">Set</button>
+        </div>
+        <div>
+          <label>BTN increment (seconds)</label>
+          <input id="timerIncInput" type="number" min="1" value="10" />
+          <button id="timerIncBtn" class="btn">Update</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Live status</h2>
+      <div class="row">
+        <div class="label">Persons</div>
+        <div id="persons" class="value">0</div>
+      </div>
+      <div class="row">
+        <div class="label">Display</div>
+        <div id="display" class="value">-</div>
+      </div>
+      <div class="row">
+        <div class="label">Last update</div>
+        <div id="updated" class="value">-</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
