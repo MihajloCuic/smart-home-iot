@@ -56,7 +56,7 @@
             "DPIR1": {
                 "name": "Door Motion Sensor",
                 "pin": 4,
-                "simulate": false,
+                "simulate": true,
                 "publish": true
             },
             "DMS": {
@@ -155,12 +155,12 @@
             "LCD": {
                 "name": "Living Room LCD Display",
                 "address": "0x27",
-                "simulate": false
+                "simulate": true
             },
             "IR": {
                 "name": "Bedroom IR Receiver",
                 "pin": 27,
-                "simulate": false,
+                "simulate": true,
                 "publish": true
             },
             "BRGB": {
@@ -168,7 +168,7 @@
                 "pin_r": 12,
                 "pin_g": 13,
                 "pin_b": 19,
-                "simulate": false,
+                "simulate": true,
                 "publish": true
             }
         }
