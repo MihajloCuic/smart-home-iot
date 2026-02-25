@@ -24,12 +24,12 @@
         },
         "alarm": {
             "pin": "1234",
-            "arm_delay": 5,
+            "arm_delay": 10,
             "grace_period": 30
         },
         "sensors": {
             "DS1": {
-                "name": "Door Sensor",
+                "name": "Door Sensor 1",
                 "pin": 17,
                 "simulate": true,
                 "publish": true
@@ -37,11 +37,11 @@
             "DL": {
                 "name": "Door Light",
                 "pin": 27,
-                "simulate": false,
+                "simulate": true,
                 "publish": true
             },
             "DUS1": {
-                "name": "Door Ultrasonic Sensor",
+                "name": "Door Ultrasonic Sensor 1",
                 "trigger_pin": 23,
                 "echo_pin": 24,
                 "simulate": true,
@@ -54,9 +54,9 @@
                 "publish": true
             },
             "DPIR1": {
-                "name": "Door Motion Sensor",
+                "name": "Door Motion Sensor 1",
                 "pin": 5,
-                "simulate": false,
+                "simulate": true,
                 "publish": true
             },
             "DMS": {
@@ -68,74 +68,103 @@
             }
         }
     },
-    "PI3": {
+    "PI2": {
         "device": {
-            "id": "PI3",
-            "name": "Bedroom Controller",
-            "location": "Bedroom"
+            "id": "PI2",
+            "name": "Kitchen Controller",
+            "location": "Kitchen / Upstairs"
         },
         "alarm": {
-            "pin": "1234",
-            "arm_delay": 5,
-            "grace_period": 30
+            "initial_state": "DISARMED"
         },
         "sensors": {
             "DS2": {
-                "name": "Bedroom Door Sensor",
+                "name": "Door Sensor 2",
                 "pin": 17,
                 "simulate": true,
                 "publish": true
             },
-            "DL1": {
-                "name": "Bedroom Door Light",
-                "pin": 27,
+            "DUS2": {
+                "name": "Door Ultrasonic Sensor 2",
+                "trigger_pin": 23,
+                "echo_pin": 24,
                 "simulate": true,
                 "publish": true
             },
-            "DB": {
-                "name": "Bedroom Buzzer",
-                "pin": 22,
-                "simulate": true,
-                "publish": true
-            },
-            "DPIR3": {
-                "name": "Bedroom Motion Sensor",
+            "DPIR2": {
+                "name": "Door Motion Sensor 2",
                 "pin": 5,
                 "simulate": true,
                 "publish": true
             },
-            "DMS": {
-                "name": "Bedroom Keypad",
-                "row_pins": [6, 13, 19, 26],
-                "col_pins": [12, 16, 20, 21],
+            "DHT3": {
+                "name": "Kitchen DHT Sensor",
+                "pin": 4,
+                "simulate": true,
+                "publish": true
+            },
+            "BTN": {
+                "name": "Kitchen Button",
+                "pin": 16,
+                "simulate": true,
+                "publish": true
+            },
+            "4SD": {
+                "name": "Kitchen 4-Digit Display",
+                "pin_clk": 18,
+                "pin_dio": 24,
+                "simulate": true,
+                "publish": true
+            },
+            "GSG": {
+                "name": "Gyroscope Sensor",
+                "address": "0x68",
+                "simulate": true,
+                "publish": true
+            }
+        }
+    },
+    "PI3": {
+        "device": {
+            "id": "PI3",
+            "name": "Bedroom Controller",
+            "location": "Bedroom / Living Room"
+        },
+        "alarm": {
+            "initial_state": "DISARMED"
+        },
+        "sensors": {
+            "DPIR3": {
+                "name": "Living Room Motion Sensor",
+                "pin": 5,
                 "simulate": true,
                 "publish": true
             },
             "DHT1": {
-                "name": "DHT Sensor 1",
+                "name": "Bedroom DHT Sensor",
                 "pin": 4,
                 "simulate": true,
                 "publish": true
             },
             "DHT2": {
-                "name": "DHT Sensor 2",
+                "name": "Master Bedroom DHT Sensor",
                 "pin": 17,
                 "simulate": true,
                 "publish": true
             },
             "LCD": {
-                "name": "LCD Display",
+                "name": "Living Room LCD Display",
                 "address": "0x27",
                 "simulate": true
             },
             "IR": {
-                "name": "IR Receiver",
+                "name": "Bedroom IR Receiver",
                 "pin": 27,
                 "simulate": true,
                 "publish": true
             },
             "BRGB": {
-                "name": "RGB Light",
+                "name": "Bedroom RGB Light",
                 "pin_r": 13,
                 "pin_g": 19,
                 "pin_b": 26,

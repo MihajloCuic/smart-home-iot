@@ -52,11 +52,12 @@ class DHTSensor(BaseComponent):
         self._temp = round(temp, 1)
         self._humidity = round(humidity, 1)
 
-    def read_and_publish(self):
-        """Read current values, publish them, print to console, and return them."""
+    def read_and_publish(self, silent=False):
+        """Read current values, publish them, optionally print, and return them."""
         temp, humidity = self.read()
         self._publish_sensor({'temperature': temp, 'humidity': humidity})
-        print(f"[{self.code}] Temp={temp}C  Humidity={humidity}%")
+        if not silent:
+            print(f"[{self.code}] Temp={temp}C  Humidity={humidity}%")
         return (temp, humidity)
 
     def cleanup(self):

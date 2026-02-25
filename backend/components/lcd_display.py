@@ -47,7 +47,7 @@ class LCDDisplay(BaseComponent):
         self._line2 = str(line2)[:16]
 
         if self.simulate:
-            print(f"[{self.code}] LCD | {self._line1:<16} | {self._line2:<16} |")
+            pass  # silent - use 't' command in controller to read on demand
         elif self._lcd is not None:
             self._lcd.clear()
             self._lcd.write_string(self._line1.ljust(16))

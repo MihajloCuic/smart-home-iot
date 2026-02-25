@@ -62,9 +62,13 @@ class MembraneSwitch(BaseComponent):
         return None
 
     def set_key(self, key):
-        """Inject a simulated key press"""
-        self._simulated_key = key
-        self.last_key = key
+        """
+        Inject a simulated key press.
+        Calls the handler immediately (does NOT go through the polling loop)
+        so that rapid multi-key sequences (e.g. '1234#') are processed in order
+        without any key being overwritten before the monitor thread reads it.
+        """
+        self._on_key_detected(key)
 
     def start_monitoring(self):
         """Start background monitoring thread"""
