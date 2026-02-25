@@ -65,7 +65,8 @@ PI2_HELP = """
     5 - Start alarm     6 - Stop alarm
 
     TIMER (Rule 8):
-    t - Set timer sec   i - Set BTN increment
+        t - Set timer sec   i - Set BTN increment
+        a - Add seconds
     k - Press button
 
     SIMULATION:

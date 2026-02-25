@@ -294,6 +294,21 @@ class PI2Controller:
             self._show_time_locked(0)
             self._publish_status()
 
+    def add_timer_seconds(self, seconds):
+        """Add seconds to the current timer (or start it if blinking)."""
+        seconds = max(0, int(seconds))
+        if seconds == 0:
+            return
+        with self._timer_lock:
+            if self._blink_active:
+                self._blink_active = False
+                self.timer_remaining = seconds
+            else:
+                self.timer_remaining += seconds
+            self.timer_running = True
+            self._show_time_locked(self.timer_remaining)
+            self._publish_status()
+
     # ========== MQTT COMMANDS (WEB APP) ==========
 
     def _start_mqtt_commands(self, mqtt_cfg):
@@ -327,6 +342,8 @@ class PI2Controller:
                 self.set_timer_increment(payload.get("seconds", self.timer_increment_seconds))
             elif command == "timer_stop":
                 self.stop_timer_blink()
+            elif command == "timer_add":
+                self.add_timer_seconds(payload.get("seconds", 0))
 
         self._mqtt_cmd_client = mqtt.Client()
         if username:
@@ -365,7 +382,7 @@ class PI2Controller:
         self.running = True
         self.publisher.start()
 
-        for code in ["DS2", "DUS2", "DPIR2", "BTN"]:
+        for code in ["DS2", "DUS2", "DPIR2", "BTN", "GSG"]:
             if code in self.components:
                 if code == "DUS2":
                     self.components[code].start_monitoring(interval=2.0)
@@ -506,6 +523,13 @@ class PI2Controller:
                 print("Invalid seconds")
                 return True
             self.set_timer_increment(seconds)
+        elif cmd == 'a':
+            try:
+                seconds = int(input("Add seconds: ").strip())
+            except ValueError:
+                print("Invalid seconds")
+                return True
+            self.add_timer_seconds(seconds)
         else:
             return None
 
