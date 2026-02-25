@@ -19,8 +19,8 @@ class Buzzer(BaseComponent):
     Publishes its own actuator events on every action.
     """
 
-    def __init__(self, settings, publisher=None):
-        super().__init__('DB', settings, publisher)
+    def __init__(self, code, settings, publisher=None):
+        super().__init__(code, settings, publisher)
         self.pin = settings.get('pin', 22)
 
         self.state = False
@@ -44,7 +44,7 @@ class Buzzer(BaseComponent):
 
     def beep(self, duration=0.5):
         """Single beep — publishes start and end"""
-        print(f"[DB] Beeping ({duration}s)...")
+        print(f"[{self.code}] Beeping ({duration}s)...")
         self._publish_actuator(True, {'action': 'beep'})
         self._gpio_on()
         time.sleep(duration)
@@ -56,7 +56,7 @@ class Buzzer(BaseComponent):
         if self.alarming:
             return
         self.alarming = True
-        print("[DB] Alarm STARTED")
+        print(f"[{self.code}] Alarm STARTED")
         self._publish_actuator(True, {'action': 'alarm'})
         self._alarm_thread = threading.Thread(
             target=self._alarm_loop,
@@ -80,7 +80,7 @@ class Buzzer(BaseComponent):
         self._gpio_off()
         if self._alarm_thread:
             self._alarm_thread.join(timeout=1)
-        print("[DB] Alarm STOPPED")
+        print(f"[{self.code}] Alarm STOPPED")
         self._publish_actuator(False, {'action': 'alarm'})
 
     def is_on(self):

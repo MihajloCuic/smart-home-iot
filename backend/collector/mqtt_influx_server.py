@@ -31,9 +31,9 @@ def _normalize_value(value):
 
 
 def main():
-    settings = load_settings()
-    mqtt_cfg = settings.get("mqtt", {})
-    influx_cfg = settings.get("influx", {})
+    all_settings = load_settings()
+    mqtt_cfg = all_settings.get("mqtt", {})
+    influx_cfg = all_settings.get("influx", {})
 
     if not MQTT_AVAILABLE:
         print("[SERVER] paho-mqtt not installed.")
@@ -89,11 +89,20 @@ def main():
                 .tag("source", source)\
                 .tag("simulated", simulated)
 
-            value = _normalize_value(item.get("value"))
-            if value is not None:
-                point.field("value", value)
-            elif "value" in item:
-                point.field("value_str", str(item.get("value")))
+            raw_value = item.get("value")
+            if isinstance(raw_value, dict):
+                for k, v in raw_value.items():
+                    norm = _normalize_value(v)
+                    if norm is not None:
+                        point.field(k, norm)
+                    else:
+                        point.field(k, str(v))
+            elif raw_value is not None:
+                normalized = _normalize_value(raw_value)
+                if normalized is not None:
+                    point.field("value", normalized)
+                else:
+                    point.field("value_str", str(raw_value))
 
             if "alert" in item:
                 point.field("alert", 1 if item.get("alert") else 0)

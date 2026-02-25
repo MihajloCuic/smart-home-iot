@@ -15,8 +15,8 @@ class DoorLight(BaseComponent):
     Controls an LED. Publishes its own state changes on every turn_on / turn_off.
     """
 
-    def __init__(self, settings, publisher=None):
-        super().__init__('DL', settings, publisher)
+    def __init__(self, code, settings, publisher=None):
+        super().__init__(code, settings, publisher)
         self.pin = settings.get('pin', 27)
         self.state = False
 
@@ -29,7 +29,7 @@ class DoorLight(BaseComponent):
         self.state = True
         if not self.simulate and RPI_AVAILABLE:
             GPIO.output(self.pin, GPIO.HIGH)
-        msg = "[DL] Light ON"
+        msg = f"[{self.code}] Light ON"
         if reason:
             msg += f" ({reason})"
         print(msg)
@@ -39,7 +39,7 @@ class DoorLight(BaseComponent):
         self.state = False
         if not self.simulate and RPI_AVAILABLE:
             GPIO.output(self.pin, GPIO.LOW)
-        msg = "[DL] Light OFF"
+        msg = f"[{self.code}] Light OFF"
         if reason:
             msg += f" ({reason})"
         print(msg)
