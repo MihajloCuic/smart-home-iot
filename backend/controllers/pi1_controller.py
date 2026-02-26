@@ -79,6 +79,7 @@ class PI1Controller:
             on_trigger_received     = self._on_alarm_trigger_from_mqtt,
             on_door_pi2_received    = self._on_door_pi2_from_mqtt,
             on_person_delta_received= self._on_person_delta_from_mqtt,
+            on_web_command          = self._on_web_command,
         )
 
         # Rule 4: alarm state machine (PI1-owned)
@@ -206,6 +207,27 @@ class PI1Controller:
         else:
             self.alarm.door_closed()
 
+    # ========== WEB COMMAND HANDLER ==========
+
+    def _on_web_command(self, command, params):
+        """
+        Handle commands from the web application.
+        Commands: 'arm', 'disarm' - inject PIN keys into the alarm state machine.
+        """
+        pin = str(params.get('pin', ''))
+        if command == 'arm':
+            print(f"[WEB] Arm command received")
+            for key in pin:
+                self.alarm.handle_key(key)
+            self.alarm.handle_key('#')
+        elif command == 'disarm':
+            print(f"[WEB] Disarm command received")
+            for key in pin:
+                self.alarm.handle_key(key)
+            self.alarm.handle_key('#')
+        else:
+            print(f"[WEB] Unknown PI1 command: {command}")
+
     # ========== CONTROLLER HOOKS ==========
 
     def _on_door_change(self, is_open):
@@ -311,7 +333,7 @@ class PI1Controller:
         dus = self.components.get("DUS1")
         if dus is None:
             return
-        dist = dus.measure_distance()
+        dist = dus.measure_and_publish()
         if dist < 0:
             return
         if dist < UltrasonicSensor.ALERT_THRESHOLD_CM:
@@ -334,8 +356,8 @@ class PI1Controller:
             if code in self.components:
                 self.components[code].start_monitoring()
 
-        # DUS1: continuous monitoring on real HW only
-        if "DUS1" in self.components and not self.components["DUS1"].simulate:
+        # DUS1: continuous monitoring (publishes distance every 2 s)
+        if "DUS1" in self.components:
             self.components["DUS1"].start_monitoring(interval=2.0)
 
         self.simulator = PI1Simulator(self.components)

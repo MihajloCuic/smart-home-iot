@@ -21,8 +21,8 @@ class UltrasonicSensor(BaseComponent):
 
     ALERT_THRESHOLD_CM = 30
 
-    def __init__(self, settings, publisher=None, on_alert=None):
-        super().__init__('DUS1', settings, publisher)
+    def __init__(self, settings, publisher=None, on_alert=None, code='DUS1'):
+        super().__init__(code, settings, publisher)
         self.trigger_pin = settings.get('trigger_pin', 23)
         self.echo_pin = settings.get('echo_pin', 24)
         self.on_alert = on_alert  # Optional external hook for controller logic
@@ -64,6 +64,14 @@ class UltrasonicSensor(BaseComponent):
             pulse_duration = pulse_end - pulse_start
             return round(pulse_duration * 17150, 2)
         return -1
+
+    def measure_and_publish(self):
+        """Measure distance, publish to MQTT, and return value."""
+        dist = self.measure_distance()
+        if dist >= 0:
+            is_alert = dist < self.ALERT_THRESHOLD_CM
+            self._publish_sensor(dist, {'alert': is_alert})
+        return dist
 
     def set_distance(self, distance):
         """Set distance (simulation only)"""

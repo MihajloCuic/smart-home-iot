@@ -34,7 +34,8 @@ class PI3Controller:
     - Rule 9 : IR remote codes control the RGB light.
     """
 
-    LCD_CYCLE_INTERVAL = 3   # Rule 7: seconds between DHT display updates
+    LCD_CYCLE_INTERVAL  = 3   # Rule 7: seconds between DHT display updates
+    DHT_PUBLISH_INTERVAL = 10  # seconds between DHT1/DHT2 MQTT publishes
 
     IR_CODE_TOGGLE = 'TOGGLE'
     IR_CODE_RED    = 'RED'
@@ -62,7 +63,8 @@ class PI3Controller:
         self.publisher = MQTTBatchPublisher(_mqtt_cfg, self.device_info)
 
         # Rule 7 state
-        self._lcd_thread = None
+        self._lcd_thread         = None
+        self._dht_publish_thread = None
         self._dht3_cache = None   # (temp, humidity) received from PI2 via MQTT
 
         # DHT3 sensor sync: subscribe to iot/sensors to receive PI2's DHT3 data
@@ -75,6 +77,7 @@ class PI3Controller:
             role                      = 'slave',
             on_state_received         = self._on_alarm_state_received,
             on_person_count_received  = self._on_person_count_received,
+            on_web_command            = self._on_web_command,
         )
         self._known_alarm_state = alarm_cfg.get('initial_state', 'DISARMED')
 
@@ -141,6 +144,37 @@ class PI3Controller:
         if self.set_person_count:
             self.set_person_count(count)
         print(f"[PI3] Person count updated -> {count}")
+
+    # ========== WEB COMMAND HANDLER ==========
+
+    def _on_web_command(self, command, params):
+        """
+        Handle commands from the web application.
+        Commands: 'rgb_set', 'rgb_off', 'rgb_toggle'.
+        """
+        rgb = self.components.get("BRGB")
+        if rgb is None:
+            print("[WEB] BRGB component not available")
+            return
+
+        if command == 'rgb_set':
+            r = int(params.get('r', 0))
+            g = int(params.get('g', 0))
+            b = int(params.get('b', 0))
+            rgb.set_color(r, g, b)
+            print(f"[WEB] RGB set to ({r}, {g}, {b})")
+        elif command == 'rgb_off':
+            rgb.turn_off()
+            print("[WEB] RGB turned off")
+        elif command == 'rgb_toggle':
+            if rgb.is_on():
+                rgb.turn_off()
+                print("[WEB] RGB toggled off")
+            else:
+                rgb.set_color(*rgb.get_last_color())
+                print("[WEB] RGB toggled on")
+        else:
+            print(f"[WEB] Unknown PI3 command: {command}")
 
     # ========== SENSOR HOOKS ==========
 
@@ -247,6 +281,19 @@ class PI3Controller:
                     if t is not None and h is not None:
                         self._dht3_cache = (float(t), float(h))
 
+    # ========== DHT1/DHT2 PERIODIC PUBLISH ==========
+
+    def _dht_publish_loop(self):
+        """
+        Periodically read and publish DHT1/DHT2 to MQTT so the web app
+        receives temperature data without requiring the CLI 't' command.
+        """
+        while self.running:
+            for key in ('DHT1', 'DHT2'):
+                if key in self.components:
+                    self.components[key].read_and_publish(silent=True)
+            time.sleep(self.DHT_PUBLISH_INTERVAL)
+
     # ========== RULE 7: LCD DHT CYCLING ==========
 
     def _lcd_cycle_loop(self):
@@ -295,6 +342,14 @@ class PI3Controller:
                 daemon=True,
             )
             self._lcd_thread.start()
+
+        # Periodically publish DHT1/DHT2 so the web app gets temperature data
+        if any(k in self.components for k in ('DHT1', 'DHT2')):
+            self._dht_publish_thread = threading.Thread(
+                target=self._dht_publish_loop,
+                daemon=True,
+            )
+            self._dht_publish_thread.start()
 
         self.simulator = PI3Simulator(self.components)
         self.simulator.start()
