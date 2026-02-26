@@ -74,7 +74,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.sensor == \"DUS1\")\n  |> filter(fn: (r) => r._field == \"value\")",
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.device == \"PI1\")\n  |> filter(fn: (r) => r.sensor == \"DUS1\")\n  |> filter(fn: (r) => r._field == \"value\")",
           "refId": "A"
         }
       ],
@@ -110,7 +110,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.sensor == \"DS1\")\n  |> filter(fn: (r) => r._field == \"value\")",
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.device == \"PI1\")\n  |> filter(fn: (r) => r.sensor == \"DS1\")\n  |> filter(fn: (r) => r._field == \"value\")",
           "refId": "A"
         }
       ],
@@ -146,7 +146,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.sensor == \"DL\")\n  |> filter(fn: (r) => r._field == \"value\")",
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.device == \"PI1\")\n  |> filter(fn: (r) => r.sensor == \"DL\")\n  |> filter(fn: (r) => r._field == \"value\")",
           "refId": "A"
         }
       ],
@@ -182,7 +182,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.sensor == \"DB\")\n  |> filter(fn: (r) => r._field == \"value\")",
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.device == \"PI1\")\n  |> filter(fn: (r) => r.sensor == \"DB\")\n  |> filter(fn: (r) => r._field == \"value\")",
           "refId": "A"
         }
       ],
@@ -218,7 +218,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.sensor == \"DPIR1\")\n  |> filter(fn: (r) => r._field == \"value\")",
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.device == \"PI1\")\n  |> filter(fn: (r) => r.sensor == \"DPIR1\")\n  |> filter(fn: (r) => r._field == \"value\")",
           "refId": "A"
         }
       ],
@@ -250,7 +250,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.sensor == \"DMS\")\n  |> filter(fn: (r) => r._field == \"value_str\")",
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"iot\")\n  |> filter(fn: (r) => r.device == \"PI1\")\n  |> filter(fn: (r) => r.sensor == \"DMS\")\n  |> filter(fn: (r) => r._field == \"value_str\")",
           "refId": "A"
         }
       ],
@@ -262,9 +262,10 @@
   "schemaVersion": 39,
   "style": "dark",
   "tags": [
-    "kt2",
+    "pi1",
     "smart-home",
-    "iot"
+    "iot",
+    "entrance"
   ],
   "templating": {
     "list": []
@@ -275,8 +276,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Smart Home IoT - KT2",
-  "uid": "smart-home-iot-kt2",
+  "title": "Smart Home IoT - PI1 (Entrance)",
+  "uid": "smart-home-iot-pi1",
   "version": 1,
   "weekStart": ""
 }
