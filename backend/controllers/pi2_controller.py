@@ -67,6 +67,13 @@ class PI2Controller:
         self._door_timer_lock = threading.Lock()
         self._door_is_open    = False
 
+        # Rule 8: kitchen timer state
+        self._timer_remaining  = 0       # seconds remaining
+        self._timer_thread     = None
+        self._timer_lock       = threading.Lock()
+        self._timer_running    = False
+        self._timer_stop_event = threading.Event()
+
         # Rule 7: background thread that periodically publishes DHT3 for PI3 LCD
         self._dht3_thread = None
 
@@ -77,6 +84,7 @@ class PI2Controller:
             role                      = 'slave',
             on_state_received         = self._on_alarm_state_received,
             on_person_count_received  = self._on_person_count_received,
+            on_web_command            = self._on_web_command,
         )
         self._known_alarm_state = alarm_cfg.get('initial_state', 'DISARMED')
 
@@ -104,6 +112,7 @@ class PI2Controller:
             self.components["DUS2"] = UltrasonicSensor(
                 s["DUS2"],
                 publisher=self.publisher,
+                code='DUS2',
             )
             self._log_init("DUS2")
 
@@ -165,6 +174,95 @@ class PI2Controller:
             self.set_person_count(count)
         print(f"[PI2] Person count updated -> {count}")
 
+    # ========== WEB COMMAND HANDLER ==========
+
+    def _on_web_command(self, command, params):
+        """
+        Handle commands from the web application.
+        Commands: 'timer_start', 'timer_add', 'timer_stop'.
+        """
+        if command == 'timer_start':
+            minutes = int(params.get('minutes', 1))
+            self._start_kitchen_timer(minutes * 60)
+        elif command == 'timer_add':
+            seconds = int(params.get('seconds', 30))
+            self._add_timer_seconds(seconds)
+        elif command == 'timer_stop':
+            self._stop_kitchen_timer()
+        else:
+            print(f"[WEB] Unknown PI2 command: {command}")
+
+    # ========== RULE 8: KITCHEN TIMER ==========
+
+    def _start_kitchen_timer(self, total_seconds):
+        """Start or restart the kitchen countdown timer on 4SD."""
+        # Stop any existing timer and wait for its thread to finish
+        with self._timer_lock:
+            self._timer_running = False
+        self._timer_stop_event.set()
+        if self._timer_thread and self._timer_thread.is_alive():
+            self._timer_thread.join(timeout=2)
+        # Start new timer
+        self._timer_stop_event.clear()
+        with self._timer_lock:
+            self._timer_remaining = max(1, total_seconds)
+            self._timer_running = True
+        display = self.components.get("4SD")
+        if display:
+            display.stop_blink()
+            display.show_time(self._timer_remaining)
+        self._timer_thread = threading.Thread(
+            target=self._timer_loop, daemon=True)
+        self._timer_thread.start()
+        print(f"[TIMER] Started: {total_seconds}s")
+
+    def _add_timer_seconds(self, seconds):
+        """Add seconds to the running kitchen timer."""
+        with self._timer_lock:
+            if self._timer_running:
+                self._timer_remaining += seconds
+                print(f"[TIMER] Added {seconds}s -> {self._timer_remaining}s remaining")
+            else:
+                print("[TIMER] Not running, cannot add time")
+
+    def _stop_kitchen_timer(self):
+        """Stop the kitchen timer and clear the display."""
+        with self._timer_lock:
+            was_running = self._timer_running
+            self._timer_running = False
+        self._timer_stop_event.set()
+        if self._timer_thread and self._timer_thread.is_alive():
+            self._timer_thread.join(timeout=2)
+            self._timer_thread = None
+        display = self.components.get("4SD")
+        if display:
+            display.stop_blink()
+            display.clear()
+        if was_running:
+            print("[TIMER] Stopped")
+
+    def _timer_loop(self):
+        """Background thread: counts down every second, updates 4SD."""
+        display = self.components.get("4SD")
+        while not self._timer_stop_event.is_set():
+            # Wait 1 second, but wake immediately if stop is signaled
+            if self._timer_stop_event.wait(timeout=1.0):
+                return
+            with self._timer_lock:
+                if not self._timer_running:
+                    return
+                self._timer_remaining -= 1
+                remaining = self._timer_remaining
+            if remaining <= 0:
+                with self._timer_lock:
+                    self._timer_running = False
+                if display:
+                    display.start_blink("0000")
+                print("[TIMER] Time's up!")
+                return
+            if display:
+                display.show_time(remaining)
+
     # ========== SENSOR HOOKS ==========
 
     def _on_door_change(self, is_open):
@@ -223,10 +321,10 @@ class PI2Controller:
     def _on_button_press(self):
         """
         BTN kitchen button press.
-        Rule 8b: adds N seconds to the running kitchen timer.
-        Logic added in logic-rules phase.
+        Rule 8b: adds 30 seconds to the running kitchen timer.
         """
         print("[BTN] Button pressed")
+        self._add_timer_seconds(30)
 
     def _on_displacement(self, delta, accel):
         """
@@ -259,7 +357,7 @@ class PI2Controller:
         dus = self.components.get("DUS2")
         if dus is None:
             return
-        dist = dus.measure_distance()
+        dist = dus.measure_and_publish()
         if dist < 0:
             return
         if dist < UltrasonicSensor.ALERT_THRESHOLD_CM:
@@ -283,8 +381,8 @@ class PI2Controller:
         if "GSG"   in self.components:
             self.components["GSG"].start_monitoring()
 
-        # DUS2: continuous monitoring on real HW only
-        if "DUS2" in self.components and not self.components["DUS2"].simulate:
+        # DUS2: continuous monitoring (publishes distance every 2 s)
+        if "DUS2" in self.components:
             self.components["DUS2"].start_monitoring(interval=2.0)
 
         # Rule 7: start DHT3 publish thread so PI3 LCD receives kitchen temperature
@@ -300,6 +398,7 @@ class PI2Controller:
 
     def stop(self):
         self.running = False
+        self._stop_kitchen_timer()
         with self._door_timer_lock:
             self._cancel_door_open_timer_locked()
         if self.simulator:

@@ -87,6 +87,9 @@ class GyroscopeSensor(BaseComponent):
 
     def inject_significant_move(self):
         """Simulation: inject a clearly significant movement (guaranteed to exceed threshold)."""
+        # Reset to resting state so delta is always computed from baseline
+        # (on real HW the monitoring loop would update _last_accel between events)
+        self._last_accel = {'x': 0.0, 'y': 0.0, 'z': 1.0}
         ax = random.uniform(0.9, 1.5)
         ay = random.uniform(0.9, 1.5)
         az = random.uniform(0.0, 0.3)

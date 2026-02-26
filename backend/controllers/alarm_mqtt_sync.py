@@ -44,6 +44,8 @@ class AlarmMQTTSync:
     TOPIC_PERSON_COUNT = "iot/home/person_count"  # PI1 → all (retained)
     TOPIC_PERSON_DELTA = "iot/home/person_delta"  # PI2 → PI1
 
+    TOPIC_WEB_COMMAND  = "iot/web/command"        # Web app → any PI
+
     def __init__(
         self,
         mqtt_cfg,
@@ -54,6 +56,7 @@ class AlarmMQTTSync:
         on_state_received=None,
         on_person_count_received=None,
         on_person_delta_received=None,
+        on_web_command=None,
     ):
         """
         Parameters
@@ -71,6 +74,9 @@ class AlarmMQTTSync:
                                PI2/PI3 – called when PI1 broadcasts absolute person count.
         on_person_delta_received : callable(source: str, delta: int)
                                PI1 only – called when PI2 requests a person count change.
+        on_web_command           : callable(command: str, params: dict)
+                               All roles – called when the web app sends a command
+                               targeting this device.
         """
         self._cfg       = mqtt_cfg
         self._device_id = device_id
@@ -81,6 +87,7 @@ class AlarmMQTTSync:
         self.on_state_received        = on_state_received
         self.on_person_count_received = on_person_count_received
         self.on_person_delta_received = on_person_delta_received
+        self.on_web_command           = on_web_command
 
         self._known_state = 'DISARMED'
         self._state_lock  = threading.Lock()
@@ -139,6 +146,8 @@ class AlarmMQTTSync:
                 # Subscribe with QoS 1; retained message delivers current state immediately
                 client.subscribe(self.TOPIC_STATE, qos=1)
                 client.subscribe(self.TOPIC_PERSON_COUNT, qos=1)
+            # All roles subscribe to web commands
+            client.subscribe(self.TOPIC_WEB_COMMAND, qos=1)
         else:
             print(f"[{self._device_id}] Connection refused (rc={rc})")
 
@@ -183,6 +192,14 @@ class AlarmMQTTSync:
         elif topic == self.TOPIC_PERSON_COUNT and self._role == 'slave':
             if self.on_person_count_received:
                 self.on_person_count_received(payload.get('count', 0))
+
+        elif topic == self.TOPIC_WEB_COMMAND:
+            target = payload.get('target', '')
+            if target == self._device_id and self.on_web_command:
+                self.on_web_command(
+                    payload.get('command', ''),
+                    payload.get('params', {}),
+                )
 
     # ========== PUBLISH API ==========
 

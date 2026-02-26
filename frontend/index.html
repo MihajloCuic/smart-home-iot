@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home IoT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark border-bottom border-secondary">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">
+            <i class="bi bi-house-door-fill"></i> Smart Home IoT
+        </span>
+        <span id="mqtt-status" class="badge bg-danger">Disconnected</span>
+    </div>
+</nav>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+<main class="container-fluid py-3">
+
+    <!-- ==================== SYSTEM OVERVIEW ==================== -->
+    <section class="mb-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-speedometer2"></i> System Overview</h5>
+        <div class="row g-3">
+            <!-- Alarm -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100" id="alarm-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shield-lock fs-1 text-muted"></i>
+                        <h6 class="card-title mt-2">Alarm</h6>
+                        <span id="alarm-state" class="badge bg-success fs-6">DISARMED</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Persons -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people-fill fs-1 text-muted"></i>
+                        <h6 class="card-title mt-2">Persons</h6>
+                        <span id="person-count" class="fs-2 fw-bold text-info">0</span>
+                    </div>
+                </div>
+            </div>
+            <!-- PI1 -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-start border-success border-3">
+                    <div class="card-body text-center">
+                        <h6 class="card-title"><i class="bi bi-door-open-fill"></i> PI1</h6>
+                        <small class="text-muted">Entrance</small><br>
+                        <span id="pi1-status" class="badge bg-secondary mt-1">Offline</span><br>
+                        <small id="pi1-last-update" class="text-muted">No data</small>
+                    </div>
+                </div>
+            </div>
+            <!-- PI2 -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-start border-warning border-3">
+                    <div class="card-body text-center">
+                        <h6 class="card-title"><i class="bi bi-cup-hot-fill"></i> PI2</h6>
+                        <small class="text-muted">Kitchen</small><br>
+                        <span id="pi2-status" class="badge bg-secondary mt-1">Offline</span><br>
+                        <small id="pi2-last-update" class="text-muted">No data</small>
+                    </div>
+                </div>
+            </div>
+            <!-- PI3 -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-start border-info border-3">
+                    <div class="card-body text-center">
+                        <h6 class="card-title"><i class="bi bi-lamp-fill"></i> PI3</h6>
+                        <small class="text-muted">Bedroom</small><br>
+                        <span id="pi3-status" class="badge bg-secondary mt-1">Offline</span><br>
+                        <small id="pi3-last-update" class="text-muted">No data</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CONTROLS ==================== -->
+    <section class="mb-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-sliders"></i> Controls</h5>
+        <div class="row g-3">
+
+            <!-- Alarm Control -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-shield-lock"></i> Alarm Control
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="alarm-pin" class="form-label">PIN Code</label>
+                            <input type="password" id="alarm-pin" class="form-control"
+                                   maxlength="4" placeholder="Enter 4-digit PIN"
+                                   inputmode="numeric" pattern="[0-9]*">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" id="btn-arm">
+                                <i class="bi bi-lock-fill"></i> Arm
+                            </button>
+                            <button class="btn btn-danger" id="btn-disarm">
+                                <i class="bi bi-unlock-fill"></i> Disarm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RGB Light -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-lightbulb-fill"></i> RGB Light (PI3)
+                    </div>
+                    <div class="card-body">
+                        <div id="rgb-preview" class="mb-3" style="height: 40px; background: #000;"></div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-danger btn-sm"   data-rgb="1,0,0">Red</button>
+                            <button class="btn btn-success btn-sm"  data-rgb="0,1,0">Green</button>
+                            <button class="btn btn-primary btn-sm"  data-rgb="0,0,1">Blue</button>
+                            <button class="btn btn-warning btn-sm"  data-rgb="1,1,0">Yellow</button>
+                            <button class="btn btn-info btn-sm"     data-rgb="0,1,1">Cyan</button>
+                            <button class="btn btn-sm" style="background:#c026d3;color:#fff" data-rgb="1,0,1">Magenta</button>
+                            <button class="btn btn-light btn-sm"    data-rgb="1,1,1">White</button>
+                            <button class="btn btn-outline-secondary btn-sm" id="btn-rgb-off">Off</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kitchen Timer -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-clock-fill"></i> Kitchen Timer (PI2)
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <span id="timer-display" class="fs-1 font-monospace text-warning">00:00</span>
+                        </div>
+                        <div class="input-group mb-3">
+                            <input type="number" id="timer-minutes" class="form-control"
+                                   min="1" max="99" value="5" placeholder="Minutes">
+                            <span class="input-group-text">min</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success flex-fill" id="btn-timer-start">
+                                <i class="bi bi-play-fill"></i> Start
+                            </button>
+                            <button class="btn btn-warning flex-fill" id="btn-timer-add">
+                                <i class="bi bi-plus-lg"></i> 30s
+                            </button>
+                            <button class="btn btn-danger flex-fill" id="btn-timer-stop">
+                                <i class="bi bi-stop-fill"></i> Stop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== LIVE SENSOR DATA ==================== -->
+    <section class="mb-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-broadcast-pin"></i> Live Sensor Data</h5>
+
+        <!-- Temperature & Humidity -->
+        <h6 class="text-secondary mt-3 mb-2">Temperature & Humidity</h6>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="bi bi-thermometer-half text-danger"></i> DHT1</h6>
+                            <small class="text-muted">Bedroom (PI3)</small>
+                        </div>
+                        <div class="d-flex justify-content-around mt-3">
+                            <div class="text-center">
+                                <span id="dht1-temp" class="fs-3 fw-bold">--</span>
+                                <small class="text-muted d-block">&deg;C</small>
+                            </div>
+                            <div class="text-center">
+                                <span id="dht1-hum" class="fs-3 fw-bold">--</span>
+                                <small class="text-muted d-block">%RH</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="bi bi-thermometer-half text-warning"></i> DHT2</h6>
+                            <small class="text-muted">Master Bedroom (PI3)</small>
+                        </div>
+                        <div class="d-flex justify-content-around mt-3">
+                            <div class="text-center">
+                                <span id="dht2-temp" class="fs-3 fw-bold">--</span>
+                                <small class="text-muted d-block">&deg;C</small>
+                            </div>
+                            <div class="text-center">
+                                <span id="dht2-hum" class="fs-3 fw-bold">--</span>
+                                <small class="text-muted d-block">%RH</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="bi bi-thermometer-half text-info"></i> DHT3</h6>
+                            <small class="text-muted">Kitchen (PI2)</small>
+                        </div>
+                        <div class="d-flex justify-content-around mt-3">
+                            <div class="text-center">
+                                <span id="dht3-temp" class="fs-3 fw-bold">--</span>
+                                <small class="text-muted d-block">&deg;C</small>
+                            </div>
+                            <div class="text-center">
+                                <span id="dht3-hum" class="fs-3 fw-bold">--</span>
+                                <small class="text-muted d-block">%RH</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Motion, Door, Light sensors -->
+        <h6 class="text-secondary mt-3 mb-2">Motion & Door Sensors</h6>
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-2">
+                <div class="card" id="card-dpir1">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-person-walking fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DPIR1</h6>
+                        <small class="text-muted">Entrance</small>
+                        <div id="dpir1-state" class="badge bg-secondary mt-1">CLEAR</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card" id="card-dpir2">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-person-walking fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DPIR2</h6>
+                        <small class="text-muted">Kitchen</small>
+                        <div id="dpir2-state" class="badge bg-secondary mt-1">CLEAR</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card" id="card-dpir3">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-person-walking fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DPIR3</h6>
+                        <small class="text-muted">Bedroom</small>
+                        <div id="dpir3-state" class="badge bg-secondary mt-1">CLEAR</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card" id="card-ds1">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-door-closed fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DS1</h6>
+                        <small class="text-muted">Front Door</small>
+                        <div id="ds1-state" class="badge bg-success mt-1">CLOSED</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card" id="card-ds2">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-door-closed fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DS2</h6>
+                        <small class="text-muted">Kitchen Door</small>
+                        <div id="ds2-state" class="badge bg-success mt-1">CLOSED</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-lightbulb fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DL</h6>
+                        <small class="text-muted">Door Light</small>
+                        <div id="dl-state" class="badge bg-secondary mt-1">OFF</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distance, Gyro, Buzzer -->
+        <h6 class="text-secondary mt-3 mb-2">Distance & Other</h6>
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-rulers fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DUS1</h6>
+                        <small class="text-muted">Entrance</small>
+                        <div class="mt-1">
+                            <span id="dus1-value" class="fs-4 fw-bold">--</span>
+                            <small class="text-muted"> cm</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-rulers fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DUS2</h6>
+                        <small class="text-muted">Kitchen</small>
+                        <div class="mt-1">
+                            <span id="dus2-value" class="fs-4 fw-bold">--</span>
+                            <small class="text-muted"> cm</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-broadcast fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">GSG</h6>
+                        <small class="text-muted">Gyroscope</small>
+                        <div class="mt-1">
+                            <span id="gsg-value" class="small fw-bold font-monospace">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-speaker-fill fs-3 text-muted"></i>
+                        <h6 class="mt-1 mb-0">DB</h6>
+                        <small class="text-muted">Buzzer</small>
+                        <div id="db-state" class="badge bg-secondary mt-1">OFF</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== HISTORICAL CHARTS ==================== -->
+    <section class="mb-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-graph-up"></i> Historical Charts (Grafana)</h5>
+        <div class="accordion" id="chartsAccordion">
+
+            <!-- Temperature -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#chart-temp">
+                        <i class="bi bi-thermometer-half me-2"></i> Temperature & Humidity
+                    </button>
+                </h2>
+                <div id="chart-temp" class="accordion-collapse collapse show"
+                     data-bs-parent="#chartsAccordion">
+                    <div class="accordion-body p-0">
+                        <iframe id="iframe-temperature" class="grafana-frame" src="about:blank"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#chart-security">
+                        <i class="bi bi-shield-check me-2"></i> Security Sensors
+                    </button>
+                </h2>
+                <div id="chart-security" class="accordion-collapse collapse"
+                     data-bs-parent="#chartsAccordion">
+                    <div class="accordion-body p-0">
+                        <iframe id="iframe-security" class="grafana-frame" src="about:blank"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actuators -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#chart-actuators">
+                        <i class="bi bi-lightbulb me-2"></i> Actuators & Lights
+                    </button>
+                </h2>
+                <div id="chart-actuators" class="accordion-collapse collapse"
+                     data-bs-parent="#chartsAccordion">
+                    <div class="accordion-body p-0">
+                        <iframe id="iframe-actuators" class="grafana-frame" src="about:blank"></iframe>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/mqtt-client.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/controls.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
