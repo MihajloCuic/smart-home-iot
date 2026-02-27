@@ -57,6 +57,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /* -------- door camera (Rule 10) -------- */
+
+    const cameraImg         = document.getElementById("camera-stream");
+    const cameraPlaceholder = document.getElementById("camera-placeholder");
+    const cameraUrl = `http://${CONFIG.camera.host}:${CONFIG.camera.port}/?action=stream`;
+
+    // Try to load stream; show placeholder on error
+    if (cameraImg) {
+        cameraImg.onload = () => {
+            cameraImg.classList.remove("d-none");
+            if (cameraPlaceholder) cameraPlaceholder.classList.add("d-none");
+        };
+        cameraImg.onerror = () => {
+            cameraImg.classList.add("d-none");
+            if (cameraPlaceholder) cameraPlaceholder.classList.remove("d-none");
+        };
+        cameraImg.src = cameraUrl;
+    }
+
     /* -------- periodic refresh -------- */
 
     setInterval(() => dashboard.refreshTimestamps(), 5000);

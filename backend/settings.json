@@ -65,6 +65,11 @@
                 "col_pins": [12, 16, 20, 21],
                 "simulate": true,
                 "publish": true
+            },
+            "WEBC": {
+                "name": "Door Web Camera",
+                "port": 8081,
+                "simulate": true
             }
         }
     },
