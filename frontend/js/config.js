@@ -11,6 +11,11 @@ const CONFIG = {
         host: window.location.hostname || "localhost",
         port: 3000,
     },
+    // PI1 camera (mjpg_streamer). Change host to PI1's IP when on real hardware.
+    camera: {
+        host: window.location.hostname || "localhost",
+        port: 8081,
+    },
     topics: {
         sensors:     "iot/sensors",
         alarmState:  "iot/alarm/state",

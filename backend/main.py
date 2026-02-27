@@ -23,6 +23,9 @@ For real hardware: run main.py on each Pi separately; they share the MQTT
 broker on the network.
 """
 
+import subprocess
+import socket
+
 from settings import load_settings
 from controllers import PI1Controller, PI2Controller, PI3Controller
 
@@ -80,6 +83,66 @@ PI3_HELP = """
   9 - Trigger DPIR3 motion
   i - Inject IR code (TOGGLE/RED/GREEN/BLUE)
 =================================================="""
+
+
+# ========== WEB CAMERA (MJPG_STREAMER) ==========
+
+def _get_local_ip():
+    """Auto-detect the local IP address of this machine."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "localhost"
+
+
+def start_camera(webc_settings):
+    """
+    Start mjpg_streamer as a background subprocess.
+    Returns the subprocess.Popen object, or None if simulated / failed.
+    """
+    if webc_settings.get("simulate", True):
+        port = webc_settings.get("port", 8081)
+        ip = _get_local_ip()
+        print(f"[WEBC] Simulated camera (no real stream)")
+        print(f"[WEBC] In HW mode, stream would be at: http://{ip}:{port}/?action=stream")
+        return None
+
+    port = webc_settings.get("port", 8081)
+    cmd = (
+        f'mjpg_streamer '
+        f'-i "input_uvc.so" '
+        f'-o "output_http.so -p {port} '
+        f'-w /usr/local/share/mjpg-streamer/www"'
+    )
+    try:
+        proc = subprocess.Popen(
+            cmd, shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        ip = _get_local_ip()
+        print(f"[WEBC] Camera started (PID {proc.pid})")
+        print(f"[WEBC] Stream at: http://{ip}:{port}/?action=stream")
+        return proc
+    except Exception as e:
+        print(f"[WEBC] Failed to start camera: {e}")
+        return None
+
+
+def stop_camera(proc):
+    """Terminate the mjpg_streamer subprocess."""
+    if proc is None:
+        return
+    proc.terminate()
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+    print("[WEBC] Camera stopped")
 
 
 # ========== SHARED PERSON COUNT ==========
@@ -204,6 +267,13 @@ def main():
 
         print(f"\n[SYSTEM] Starting {label}...")
 
+        # Start web camera for PI1 (Rule 10)
+        camera_proc = None
+        if pi_key == 'PI1':
+            webc_cfg = pi_settings.get("sensors", {}).get("WEBC", {})
+            if webc_cfg:
+                camera_proc = start_camera(webc_cfg)
+
         extra = extra_fn()
         controller = ControllerClass(
             pi_settings,
@@ -216,6 +286,7 @@ def main():
         keep_running = run_loop(controller, help_text)
 
         print(f"\n[SYSTEM] Stopping {label}...")
+        stop_camera(camera_proc)
         controller.cleanup()
         print(f"[SYSTEM] {label} stopped.\n")
 
